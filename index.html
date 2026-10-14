@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Hostel Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars and transition styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased bg-slate-100 flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between z-20 shadow-xl">
+        <div>
+            <!-- Logo Header -->
+            <div class="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800 justify-between md:justify-start gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-sky-500/30">
+                    <i class="fa-solid font-black fa-building"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white tracking-wide text-base leading-tight">DormHQ Pro</h1>
+                    <p class="text-xs text-sky-400 font-medium">Enterprise Campus</p>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Nav Links -->
+            <nav id="nav-menu" class="p-4 space-y-1 hidden md:block">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">Main Modules</p>
+                <a href="#overview" onclick="switchTab('overview')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-sky-600 text-white shadow-md shadow-sky-600/20">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> Overview & KPI
+                </a>
+                <a href="#rooms" onclick="switchTab('rooms')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-door-open w-5 text-center"></i> Rooms & Allocation
+                </a>
+                <a href="#students" onclick="switchTab('students')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-users w-5 text-center"></i> Student Profiles
+                </a>
+                <a href="#payments" onclick="switchTab('payments')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-receipt w-5 text-center"></i> Fees & Payments
+                </a>
+                <a href="#complaints" onclick="switchTab('complaints')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-screwdriver-wrench w-5 text-center"></i> Maintenance Desk
+                </a>
+                <a href="#visitors" onclick="switchTab('visitors')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-id-badge w-5 text-center"></i> Visitors & Gate Pass
+                </a>
+                <a href="#mess" onclick="switchTab('mess')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 hover:text-white text-slate-400">
+                    <i class="fa-solid fa-utensils w-5 text-center"></i> Smart Mess
+                </a>
+            </nav>
+        </div>
+
+        <!-- Admin Profile footer -->
+        <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Admin" class="w-9 h-9 rounded-full object-cover border border-slate-700">
+                <div class="text-xs">
+                    <p class="font-semibold text-white">Sarah Jenkins</p>
+                    <p class="text-slate-400">Chief Warden</p>
+                </div>
+            </div>
+            <button onclick="resetData()" title="Reset Mock Data" class="text-slate-400 hover:text-rose-400 transition-colors p-1.5 rounded-lg">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+
+        <!-- Top Header Bar -->
+        <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between z-10">
+            <div class="flex items-center gap-4 flex-1 max-w-xl">
+                <div class="relative w-full">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="global-search" onkeyup="handleGlobalSearch(this.value)" placeholder="Search students, room numbers, tickets, visitors..." 
+                           class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition-all">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="exportDataReport()" class="hidden sm:flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors">
+                    <i class="fa-solid fa-download"></i> Export Data
+                </button>
+                <div class="relative">
+                    <button class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center relative">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <div id="content-area" class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-100/70">
+
+            <!-- 1. OVERVIEW / DASHBOARD TAB -->
+            <div id="tab-overview" class="tab-content space-y-6">
+                <!-- KPI Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-medium text-slate-500 uppercase">Total Rooms</span>
+                            <div class="p-2 bg-sky-50 text-sky-600 rounded-lg"><i class="fa-solid fa-door-closed"></i></div>
+                        </div>
+                        <div class="mt-2">
+                            <h3 class="text-2xl font-bold text-slate-800" id="kpi-total-rooms">48</h3>
+                            <p class="text-xs text-emerald-600 font-medium mt-1"><i class="fa-solid fa-arrow-up"></i> 100% capacity ready</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-medium text-slate-500 uppercase">Occupied Beds</span>
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><i class="fa-solid fa-bed"></i></div>
+                        </div>
+                        <div class="mt-2">
+                            <h3 class="text-2xl font-bold text-slate-800" id="kpi-occupied-beds">82 / 96</h3>
+                            <p class="text-xs text-indigo-600 font-medium mt-1" id="kpi-occupancy-rate">85.4% Rate</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-medium text-slate-500 uppercase">Available Beds</span>
+                            <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i class="fa-solid fa-square-check"></i></div>
+                        </div>
+                        <div class="mt-2">
+                            <h3 class="text-2xl font-bold text-slate-800" id="kpi-available-beds">14</h3>
+                            <p class="text-xs text-slate-500 mt-1">Ready for check-in</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-medium text-slate-500 uppercase">Pending Dues</span>
+                            <div class="p-2 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        </div>
+                        <div class="mt-2">
+                            <h3 class="text-2xl font-bold text-rose-600" id="kpi-pending-dues">$4,250</h3>
+                            <p class="text-xs text-rose-500 font-medium mt-1">12 overdue records</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-medium text-slate-500 uppercase">Active Tickets</span>
+                            <div class="p-2 bg-amber-50 text-amber-600 rounded-lg"><i class="fa-solid fa-wrench"></i></div>
+                        </div>
+                        <div class="mt-2">
+                            <h3 class="text-2xl font-bold text-slate-800" id="kpi-active-tickets">5</h3>
+                            <p class="text-xs text-amber-600 font-medium mt-1">2 Urgent</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-xs font-medium text-slate-500 uppercase">Visitors Today</span>
+                            <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i class="fa-solid fa-user-clock"></i></div>
+                        </div>
+                        <div class="mt-2">
+                            <h3 class="text-2xl font-bold text-slate-800" id="kpi-visitors-today">8</h3>
+                            <p class="text-xs text-purple-600 font-medium mt-1">3 currently inside</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Ribbon -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center justify-between">
+                    <span class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-500"></i> Quick Actions:
+                    </span>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openModal('add-student-modal')" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i> Add Student
+                        </button>
+                        <button onclick="openModal('add-complaint-modal')" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Log Ticket
+                        </button>
+                        <button onclick="openModal('add-visitor-modal')" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-id-card"></i> Log Visitor
+                        </button>
+                        <button onclick="openModal('gate-pass-modal')" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-passport"></i> Gate Pass
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Visual Analytics Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Occupancy Distribution -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm lg:col-span-1">
+                        <h4 class="font-bold text-slate-800 text-sm mb-4">Room Type Breakdown</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-600">Single AC (16 Rooms)</span>
+                                    <span class="text-sky-600 font-bold">14 / 16 Occupied</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-sky-600 h-2.5 rounded-full" style="width: 87.5%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-600">Double Non-AC (20 Rooms)</span>
+                                    <span class="text-indigo-600 font-bold">36 / 40 Beds</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-600">Deluxe Suite (12 Rooms)</span>
+                                    <span class="text-emerald-600 font-bold">32 / 40 Beds</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-emerald-500 h-2.5 rounded-full" style="width: 80%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Bar Visualization -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm lg:col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-slate-800 text-sm">Monthly Revenue & Collections</h4>
+                            <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full">+12.4% vs last month</span>
+                        </div>
+                        <div class="h-44 flex items-end justify-between gap-2 pt-4 px-2 border-b border-slate-100">
+                            <!-- SVG / HTML CSS Bar Chart -->
+                            <div class="flex-1 flex flex-col items-center gap-2 group">
+                                <div class="w-full bg-sky-200 group-hover:bg-sky-600 transition-all rounded-t" style="height: 45%;"></div>
+                                <span class="text-[10px] text-slate-400 font-medium">May</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2 group">
+                                <div class="w-full bg-sky-200 group-hover:bg-sky-600 transition-all rounded-t" style="height: 60%;"></div>
+                                <span class="text-[10px] text-slate-400 font-medium">Jun</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2 group">
+                                <div class="w-full bg-sky-200 group-hover:bg-sky-600 transition-all rounded-t" style="height: 75%;"></div>
+                                <span class="text-[10px] text-slate-400 font-medium">Jul</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2 group">
+                                <div class="w-full bg-sky-200 group-hover:bg-sky-600 transition-all rounded-t" style="height: 65%;"></div>
+                                <span class="text-[10px] text-slate-400 font-medium">Aug</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2 group">
+                                <div class="w-full bg-sky-200 group-hover:bg-sky-600 transition-all rounded-t" style="height: 85%;"></div>
+                                <span class="text-[10px] text-slate-400 font-medium">Sep</span>
+                            </div>
+                            <div class="flex-1 flex flex-col items-center gap-2 group">
+                                <div class="w-full bg-sky-600 rounded-t shadow-md shadow-sky-500/20" style="height: 95%;"></div>
+                                <span class="text-[10px] text-sky-600 font-bold">Oct</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                    <h4 class="font-bold text-slate-800 text-sm mb-4">Recent System Logs</h4>
+                    <div id="activity-feed" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ROOM ALLOCATION & AVAILABILITY TAB -->
+            <div id="tab-rooms" class="tab-content hidden space-y-6">
+                <!-- Filters Bar -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <label class="text-xs font-semibold text-slate-500 uppercase">Floor:</label>
+                        <select id="room-floor-filter" onchange="renderRooms()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="all">All Floors</option>
+                            <option value="1">Floor 1</option>
+                            <option value="2">Floor 2</option>
+                            <option value="3">Floor 3</option>
+                        </select>
+
+                        <label class="text-xs font-semibold text-slate-500 uppercase ml-2">Type:</label>
+                        <select id="room-type-filter" onchange="renderRooms()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="all">All Types</option>
+                            <option value="Single AC">Single AC</option>
+                            <option value="Double Non-AC">Double Non-AC</option>
+                            <option value="Deluxe Suite">Deluxe Suite</option>
+                        </select>
+
+                        <label class="text-xs font-semibold text-slate-500 uppercase ml-2">Status:</label>
+                        <select id="room-status-filter" onchange="renderRooms()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="all">All Status</option>
+                            <option value="Available">Available Beds</option>
+                            <option value="Full">Fully Occupied</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="flex items-center gap-4 text-xs">
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Vacant</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-600 inline-block"></span> Occupied</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Maintenance</span>
+                    </div>
+                </div>
+
+                <!-- Interactive Rooms Grid -->
+                <div id="rooms-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Populated via Javascript -->
+                </div>
+            </div>
+
+            <!-- 3. STUDENT PROFILE DATABASE TAB -->
+            <div id="tab-students" class="tab-content hidden space-y-6">
+                <!-- Action Controls -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <input type="text" id="student-search" onkeyup="renderStudents()" placeholder="Filter by student name or roll..." class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-1.5 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <select id="student-status-filter" onchange="renderStudents()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="all">All Statuses</option>
+                            <option value="Active">Active Resident</option>
+                            <option value="Checked Out">Checked Out</option>
+                        </select>
+                    </div>
+                    <button onclick="openModal('add-student-modal')" class="w-full md:w-auto px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Register New Student
+                    </button>
+                </div>
+
+                <!-- Student Table -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
+                                    <th class="py-3 px-4">Student</th>
+                                    <th class="py-3 px-4">Room & Floor</th>
+                                    <th class="py-3 px-4">Emergency Contact</th>
+                                    <th class="py-3 px-4">Check-In Date</th>
+                                    <th class="py-3 px-4">Fee Status</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. FEE & PAYMENT TRACKER TAB -->
+            <div id="tab-payments" class="tab-content hidden space-y-6">
+                <!-- Summary cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Total Collected (Oct)</span>
+                        <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="payment-total-collected">$28,400</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Total Overdue / Pending</span>
+                        <h3 class="text-2xl font-bold text-rose-600 mt-1" id="payment-total-pending">$4,250</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Paid Compliance Rate</span>
+                        <h3 class="text-2xl font-bold text-sky-600 mt-1">87.0%</h3>
+                    </div>
+                </div>
+
+                <!-- Ledger Table -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
+                        <h3 class="font-bold text-slate-800 text-base">Fee Ledger & Billing</h3>
+                        <div class="flex items-center gap-2">
+                            <select id="payment-filter-status" onchange="renderPayments()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                <option value="all">All Payment Status</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Overdue">Overdue</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
+                                    <th class="py-3 px-4">Invoice #</th>
+                                    <th class="py-3 px-4">Student</th>
+                                    <th class="py-3 px-4">Type</th>
+                                    <th class="py-3 px-4">Amount</th>
+                                    <th class="py-3 px-4">Due Date</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payment-table-body" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. MAINTENANCE & COMPLAINT DESK TAB -->
+            <div id="tab-complaints" class="tab-content hidden space-y-6">
+                <!-- Top controls -->
+                <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div>
+                        <h3 class="font-bold text-slate-800">Hostel Complaints & Tickets</h3>
+                        <p class="text-xs text-slate-500">Track and resolve maintenance issues across room blocks</p>
+                    </div>
+                    <button onclick="openModal('add-complaint-modal')" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Submit Complaint
+                    </button>
+                </div>
+
+                <!-- Ticket Table -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
+                                    <th class="py-3 px-4">Ticket ID</th>
+                                    <th class="py-3 px-4">Room & Issue</th>
+                                    <th class="py-3 px-4">Category</th>
+                                    <th class="py-3 px-4">Priority</th>
+                                    <th class="py-3 px-4">Reported Date</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Update Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="complaint-table-body" class="divide-y divide-slate-100 text-slate-700">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. VISITOR LOGGING & DIGITAL GATE PASS TAB -->
+            <div id="tab-visitors" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Live Visitors Panel -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-slate-800 text-base">Live Visitor Registry</h3>
+                                <button onclick="openModal('add-visitor-modal')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-colors">
+                                    <i class="fa-solid fa-plus"></i> New Visitor
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-200">
+                                            <th class="py-2.5 px-3">Visitor</th>
+                                            <th class="py-2.5 px-3">Host Student</th>
+                                            <th class="py-2.5 px-3">Entry Time</th>
+                                            <th class="py-2.5 px-3 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="visitor-table-body" class="divide-y divide-slate-100">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gate Pass Module -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800 text-base">Digital Gate Pass Requests</h3>
+                            <button onclick="openModal('gate-pass-modal')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg transition-colors">
+                                <i class="fa-solid fa-paper-plane"></i> Request Pass
+                            </button>
+                        </div>
+                        <div class="space-y-3" id="gatepass-container">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. SMART MESS & CATERING MANAGEMENT TAB -->
+            <div id="tab-mess" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Meal Predictor Card -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm lg:col-span-1 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base">Today's Meal Headcount</h3>
+                        <div class="space-y-3">
+                            <div class="p-3 bg-amber-50 rounded-lg border border-amber-100 flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs text-amber-800 font-semibold uppercase">Breakfast (8:00 AM)</p>
+                                    <p class="text-sm font-bold text-slate-800 mt-0.5">Oatmeal & Eggs Toast</p>
+                                </div>
+                                <span class="text-lg font-black text-amber-600">76 / 82</span>
+                            </div>
+                            <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100 flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs text-emerald-800 font-semibold uppercase">Lunch (1:00 PM)</p>
+                                    <p class="text-sm font-bold text-slate-800 mt-0.5">Grilled Chicken & Rice</p>
+                                </div>
+                                <span class="text-lg font-black text-emerald-600">72 / 82</span>
+                            </div>
+                            <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-100 flex justify-between items-center">
+                                <div>
+                                    <p class="text-xs text-indigo-800 font-semibold uppercase">Dinner (8:00 PM)</p>
+                                    <p class="text-sm font-bold text-slate-800 mt-0.5">Vegetable Curry & Naan</p>
+                                </div>
+                                <span class="text-lg font-black text-indigo-600">68 / 82</span>
+                            </div>
+                        </div>
+
+                        <!-- Rebate Calculator Box -->
+                        <div class="border-t border-slate-200 pt-4 mt-4">
+                            <h4 class="font-bold text-xs uppercase text-slate-500 mb-2">Meal Opt-out Rebate Estimator</h4>
+                            <div class="flex gap-2">
+                                <input type="number" id="rebate-days" placeholder="Missed Days" min="1" max="30" class="w-1/2 p-2 border border-slate-200 rounded-lg text-xs">
+                                <button onclick="calculateRebate()" class="w-1/2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-lg">Calculate</button>
+                            </div>
+                            <p id="rebate-result" class="text-xs text-emerald-600 font-semibold mt-2 hidden"></p>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Menu Table -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm lg:col-span-2">
+                        <h3 class="font-bold text-slate-800 text-base mb-4">Weekly Mess Menu Schedule</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] border-b border-slate-200">
+                                        <th class="py-2.5 px-3">Day</th>
+                                        <th class="py-2.5 px-3">Breakfast</th>
+                                        <th class="py-2.5 px-3">Lunch</th>
+                                        <th class="py-2.5 px-3">Dinner</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-slate-700">
+                                    <tr>
+                                        <td class="py-3 px-3 font-semibold">Monday</td>
+                                        <td class="py-3 px-3">Pancakes & Fruit</td>
+                                        <td class="py-3 px-3">Pasta Primavera</td>
+                                        <td class="py-3 px-3">Roast Turkey</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-3 font-semibold">Tuesday</td>
+                                        <td class="py-3 px-3">Oatmeal & Eggs</td>
+                                        <td class="py-3 px-3">Chicken Rice Bowl</td>
+                                        <td class="py-3 px-3">Veggie Curry</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-3 font-semibold">Wednesday</td>
+                                        <td class="py-3 px-3">French Toast</td>
+                                        <td class="py-3 px-3">Beef Tacos & Salad</td>
+                                        <td class="py-3 px-3">Baked Salmon</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-3 font-semibold">Thursday</td>
+                                        <td class="py-3 px-3">Smoothie Bowls</td>
+                                        <td class="py-3 px-3">Mediterranean Wrap</td>
+                                        <td class="py-3 px-3">Lasagna Bolognese</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-3 font-semibold">Friday</td>
+                                        <td class="py-3 px-3">Bagel & Cream Cheese</td>
+                                        <td class="py-3 px-3">Fish & Chips</td>
+                                        <td class="py-3 px-3">BBQ Ribs / Veggie Patty</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL 1: ADD NEW STUDENT -->
+    <div id="add-student-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-lg">Register New Student</h3>
+                <button onclick="closeModal('add-student-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="add-student-form" onsubmit="handleAddStudent(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+                    <input type="text" id="new-std-name" required placeholder="e.g. Alex Morgan" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Room Assignment</label>
+                    <select id="new-std-room" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Emergency Contact Phone</label>
+                    <input type="text" id="new-std-contact" required placeholder="+1 (555) 019-2834" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('add-student-modal')" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold">Save Resident</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LOG COMPLAINT -->
+    <div id="add-complaint-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-lg">Submit Maintenance Ticket</h3>
+                <button onclick="closeModal('add-complaint-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="add-complaint-form" onsubmit="handleAddComplaint(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Room Number</label>
+                    <input type="text" id="cmp-room" required placeholder="e.g. 102" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Category</label>
+                    <select id="cmp-category" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Electrical">Electrical</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="HVAC">HVAC / AC</option>
+                        <option value="Cleanliness">Cleanliness</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Priority</label>
+                    <select id="cmp-priority" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High / Urgent</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Issue Description</label>
+                    <textarea id="cmp-desc" required placeholder="Describe the maintenance fault..." class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500" rows="3"></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('add-complaint-modal')" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-sm font-semibold">Submit Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: LOG VISITOR -->
+    <div id="add-visitor-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-lg">Check-In Visitor</h3>
+                <button onclick="closeModal('add-visitor-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="add-visitor-form" onsubmit="handleAddVisitor(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Visitor Full Name</label>
+                    <input type="text" id="vis-name" required placeholder="e.g. Robert Miller" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Host Student Name</label>
+                    <input type="text" id="vis-host" required placeholder="e.g. Marcus Vance" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Purpose of Visit</label>
+                    <input type="text" id="vis-purpose" required placeholder="e.g. Delivering textbooks / Parent visit" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('add-visitor-modal')" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold">Register Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: GATE PASS REQUEST -->
+    <div id="gate-pass-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-lg">Submit Digital Gate Pass</h3>
+                <button onclick="closeModal('gate-pass-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="gate-pass-form" onsubmit="handleGatePass(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Student Name</label>
+                    <input type="text" id="gp-name" required placeholder="e.g. Sophia Chen" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Reason for Leave</label>
+                    <input type="text" id="gp-reason" required placeholder="e.g. Weekend Home Visit" class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Exit Date</label>
+                        <input type="date" id="gp-exit" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Return Date</label>
+                        <input type="date" id="gp-return" required class="w-full p-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('gate-pass-modal')" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: STUDENT DETAILS VIEW -->
+    <div id="student-detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-fade-in space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-800 text-lg">Student Profile & Ledger</h3>
+                <button onclick="closeModal('student-detail-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="student-detail-body" class="space-y-4">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial Dummy Data Sets
+        const initialData = {
+            rooms: [
+                { id: 101, floor: 1, type: "Single AC", capacity: 1, occupied: 1, price: 450, status: "Full", residents: ["Marcus Vance"] },
+                { id: 102, floor: 1, type: "Double Non-AC", capacity: 2, occupied: 2, price: 300, status: "Full", residents: ["Sophia Chen", "Liam Harper"] },
+                { id: 103, floor: 1, type: "Double Non-AC", capacity: 2, occupied: 1, price: 300, status: "Available", residents: ["David Kim"] },
+                { id: 104, floor: 1, type: "Deluxe Suite", capacity: 3, occupied: 0, price: 600, status: "Available", residents: [] },
+                { id: 201, floor: 2, type: "Single AC", capacity: 1, occupied: 0, price: 450, status: "Maintenance", residents: [] },
+                { id: 202, floor: 2, type: "Double Non-AC", capacity: 2, occupied: 2, price: 300, status: "Full", residents: ["Emma Watson", "Lucas Scott"] },
+                { id: 203, floor: 2, type: "Deluxe Suite", capacity: 3, occupied: 3, price: 600, status: "Full", residents: ["Oliver Queen", "Barry Allen", "Clark Kent"] },
+                { id: 301, floor: 3, type: "Single AC", capacity: 1, occupied: 1, price: 450, status: "Full", residents: ["Bruce Wayne"] },
+                { id: 302, floor: 3, type: "Double Non-AC", capacity: 2, occupied: 1, price: 300, status: "Available", residents: ["Diana Prince"] },
+            ],
+            students: [
+                { id: "STD-1001", name: "Marcus Vance", room: 101, floor: 1, contact: "+1 555-0192", checkIn: "2026-01-15", feeStatus: "Paid", status: "Active" },
+                { id: "STD-1002", name: "Sophia Chen", room: 102, floor: 1, contact: "+1 555-0188", checkIn: "2026-02-01", feeStatus: "Pending", status: "Active" },
+                { id: "STD-1003", name: "Liam Harper", room: 102, floor: 1, contact: "+1 555-0144", checkIn: "2026-02-01", feeStatus: "Paid", status: "Active" },
+                { id: "STD-1004", name: "David Kim", room: 103, floor: 1, contact: "+1 555-0133", checkIn: "2026-03-10", feeStatus: "Overdue", status: "Active" },
+                { id: "STD-1005", name: "Emma Watson", room: 202, floor: 2, contact: "+1 555-0177", checkIn: "2026-01-20", feeStatus: "Paid", status: "Active" },
+            ],
+            payments: [
+                { id: "INV-8801", student: "Marcus Vance", type: "Rent & Mess", amount: 450, dueDate: "2026-10-01", status: "Paid" },
+                { id: "INV-8802", student: "Sophia Chen", type: "Rent & Mess", amount: 300, dueDate: "2026-10-05", status: "Pending" },
+                { id: "INV-8803", student: "David Kim", type: "Security Deposit", amount: 500, dueDate: "2026-09-15", status: "Overdue" },
+                { id: "INV-8804", student: "Emma Watson", type: "Rent & Mess", amount: 300, dueDate: "2026-10-01", status: "Paid" },
+            ],
+            complaints: [
+                { id: "TK-401", room: 302, category: "Plumbing", priority: "High", desc: "Water leakage under room sink", reported: "Oct 12, 2026", status: "Open" },
+                { id: "TK-402", room: 201, category: "HVAC", priority: "Medium", desc: "AC unit making rattling noise", reported: "Oct 10, 2026", status: "In Progress" },
+                { id: "TK-403", room: 102, category: "Electrical", priority: "Low", desc: "Desk lamp outlet loose", reported: "Oct 08, 2026", status: "Resolved" },
+            ],
+            visitors: [
+                { id: "VIS-901", name: "Arthur Vance", host: "Marcus Vance", entryTime: "10:15 AM", status: "Inside" },
+                { id: "VIS-902", name: "Helen Chen", host: "Sophia Chen", entryTime: "09:30 AM", status: "Checked Out" },
+            ],
+            gatePasses: [
+                { id: "GP-301", student: "Sophia Chen", reason: "Family Function", exit: "2026-10-16", return: "2026-10-18", status: "Pending" },
+                { id: "GP-302", student: "David Kim", reason: "Medical Appointment", exit: "2026-10-14", return: "2026-10-15", status: "Approved" },
+            ],
+            logs: [
+                { id: 1, text: "System initialized with enterprise default parameters", time: "Just now", icon: "fa-info-circle text-sky-500" },
+                { id: 2, text: "New visitor registered for Marcus Vance", time: "15 mins ago", icon: "fa-user-check text-purple-500" },
+            ]
+        };
+
+        // Persistent State Handling
+        let state = JSON.parse(localStorage.getItem('hostel_app_state')) || initialData;
+
+        function saveState() {
+            localStorage.setItem('hostel_app_state', JSON.stringify(state));
+        }
+
+        function resetData() {
+            state = JSON.parse(JSON.stringify(initialData));
+            saveState();
+            showToast("System reset to default mock state", "info");
+            initApp();
+        }
+
+        // Navigation Switcher
+        function switchTab(tabKey) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-sky-600', 'text-white', 'shadow-md', 'shadow-sky-600/20');
+                el.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+            });
+
+            const targetTab = document.getElementById(`tab-${tabKey}`);
+            if(targetTab) targetTab.classList.remove('hidden');
+
+            const activeNav = document.querySelector(`a[href="#${tabKey}"]`);
+            if(activeNav) {
+                activeNav.classList.add('bg-sky-600', 'text-white', 'shadow-md', 'shadow-sky-600/20');
+                activeNav.classList.remove('text-slate-400', 'hover:bg-slate-800');
+            }
+
+            // Close mobile menu if open
+            document.getElementById('nav-menu').classList.add('hidden');
+            document.getElementById('nav-menu').classList.add('md:block');
+        }
+
+        // Toast Notification System
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'danger' ? 'bg-rose-600' : 'bg-slate-800';
+            const icon = type === 'success' ? 'fa-circle-check' : type === 'danger' ? 'fa-circle-xmark' : 'fa-circle-info';
+
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium animate-fade-in pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Render Dashboard KPIs & Feed
+        function renderDashboard() {
+            let totalBeds = 0;
+            let occupiedBeds = 0;
+
+            state.rooms.forEach(r => {
+                totalBeds += r.capacity;
+                occupiedBeds += r.occupied;
+            });
+
+            document.getElementById('kpi-total-rooms').innerText = state.rooms.length;
+            document.getElementById('kpi-occupied-beds').innerText = `${occupiedBeds} / ${totalBeds}`;
+            document.getElementById('kpi-available-beds').innerText = totalBeds - occupiedBeds;
+            
+            const rate = ((occupiedBeds / totalBeds) * 100).toFixed(1);
+            document.getElementById('kpi-occupancy-rate').innerText = `${rate}% Occupancy`;
+
+            const activeTickets = state.complaints.filter(c => c.status !== 'Resolved').length;
+            document.getElementById('kpi-active-tickets').innerText = activeTickets;
+
+            const activeVisitors = state.visitors.filter(v => v.status === 'Inside').length;
+            document.getElementById('kpi-visitors-today').innerText = state.visitors.length;
+
+            // Activity Feed
+            const feedContainer = document.getElementById('activity-feed');
+            feedContainer.innerHTML = state.logs.slice(0, 5).map(log => `
+                <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-50 last:border-0">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid ${log.icon}"></i>
+                        <span class="font-medium text-slate-700">${log.text}</span>
+                    </div>
+                    <span class="text-slate-400">${log.time}</span>
+                </div>
+            `).join('');
+        }
+
+        // Render Rooms Grid
+        function renderRooms() {
+            const grid = document.getElementById('rooms-grid');
+            const floorFilter = document.getElementById('room-floor-filter').value;
+            const typeFilter = document.getElementById('room-type-filter').value;
+            const statusFilter = document.getElementById('room-status-filter').value;
+
+            const filtered = state.rooms.filter(room => {
+                const matchFloor = floorFilter === 'all' || room.floor.toString() === floorFilter;
+                const matchType = typeFilter === 'all' || room.type === typeFilter;
+                const matchStatus = statusFilter === 'all' || 
+                    (statusFilter === 'Available' && room.occupied < room.capacity) ||
+                    (statusFilter === 'Full' && room.occupied === room.capacity) ||
+                    (statusFilter === 'Maintenance' && room.status === 'Maintenance');
+                return matchFloor && matchType && matchStatus;
+            });
+
+            grid.innerHTML = filtered.map(room => {
+                const isFull = room.occupied >= room.capacity;
+                const isMaint = room.status === 'Maintenance';
+                
+                let badgeBg = "bg-emerald-100 text-emerald-800";
+                let statusLabel = `${room.capacity - room.occupied} Available`;
+                if(isMaint) {
+                    badgeBg = "bg-amber-100 text-amber-800";
+                    statusLabel = "Maintenance";
+                } else if(isFull) {
+                    badgeBg = "bg-indigo-100 text-indigo-800";
+                    statusLabel = "Fully Occupied";
+                }
+
+                return `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-bold text-slate-800 text-base">Room ${room.id}</h4>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeBg}">${statusLabel}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 font-medium mb-3">${room.type} • Floor ${room.floor}</p>
+                            
+                            <div class="space-y-1.5 mb-3">
+                                <div class="text-[11px] font-semibold text-slate-400 uppercase">Residents:</div>
+                                ${room.residents.length > 0 
+                                    ? room.residents.map(res => `<div class="text-xs bg-slate-50 p-1.5 rounded border border-slate-100 font-medium text-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-user text-[10px] text-sky-500"></i> ${res}</div>`).join('') 
+                                    : `<div class="text-xs text-slate-400 italic">No assigned residents</div>`}
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                            <span class="font-bold text-slate-700">$${room.price}/mo</span>
+                            <button onclick="toggleRoomStatus(${room.id})" class="text-xs font-semibold text-sky-600 hover:text-sky-800">
+                                ${isMaint ? 'Mark Active' : 'Toggle Status'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Student Registry
+        function renderStudents() {
+            const tableBody = document.getElementById('student-table-body');
+            const searchVal = document.getElementById('student-search').value.toLowerCase();
+            const statusFilter = document.getElementById('student-status-filter').value;
+
+            const filtered = state.students.filter(std => {
+                const matchSearch = std.name.toLowerCase().includes(searchVal) || std.id.toLowerCase().includes(searchVal);
+                const matchStatus = statusFilter === 'all' || std.status === statusFilter;
+                return matchSearch && matchStatus;
+            });
+
+            tableBody.innerHTML = filtered.map(std => {
+                const feeBadge = std.feeStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' : std.feeStatus === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
+                
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3.5 px-4 font-semibold text-slate-800">
+                            ${std.name}
+                            <span class="block text-[10px] font-normal text-slate-400">${std.id}</span>
+                        </td>
+                        <td class="py-3.5 px-4">Room ${std.room} (Fl. ${std.floor})</td>
+                        <td class="py-3.5 px-4 text-slate-600">${std.contact}</td>
+                        <td class="py-3.5 px-4 text-slate-500">${std.checkIn}</td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${feeBadge}">${std.feeStatus}</span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="inline-flex items-center gap-1 text-xs font-medium ${std.status === 'Active' ? 'text-emerald-600' : 'text-slate-400'}">
+                                <span class="w-1.5 h-1.5 rounded-full ${std.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'}"></span> ${std.status}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                            <button onclick="viewStudentDetails('${std.id}')" class="text-xs font-semibold text-sky-600 hover:text-sky-800 bg-sky-50 px-2.5 py-1 rounded-md">View Profile</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Payments
+        function renderPayments() {
+            const tableBody = document.getElementById('payment-table-body');
+            const statusFilter = document.getElementById('payment-filter-status').value;
+
+            const filtered = state.payments.filter(p => statusFilter === 'all' || p.status === statusFilter);
+
+            tableBody.innerHTML = filtered.map(p => {
+                const badge = p.status === 'Paid' ? 'bg-emerald-100 text-emerald-800' : p.status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800';
+                
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3.5 px-4 font-mono text-xs text-slate-500">${p.id}</td>
+                        <td class="py-3.5 px-4 font-semibold text-slate-800">${p.student}</td>
+                        <td class="py-3.5 px-4 text-slate-600">${p.type}</td>
+                        <td class="py-3.5 px-4 font-bold text-slate-800">$${p.amount}</td>
+                        <td class="py-3.5 px-4 text-slate-500">${p.dueDate}</td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full ${badge}">${p.status}</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                            ${p.status !== 'Paid' ? `<button onclick="collectPayment('${p.id}')" class="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md transition-colors">Mark Paid</button>` : `<span class="text-xs text-slate-400 italic"><i class="fa-solid fa-check"></i> Cleared</span>`}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Maintenance Complaints
+        function renderComplaints() {
+            const tableBody = document.getElementById('complaint-table-body');
+            tableBody.innerHTML = state.complaints.map(c => {
+                const statusBadge = c.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800' : c.status === 'In Progress' ? 'bg-sky-100 text-sky-800' : 'bg-rose-100 text-rose-800';
+                const prioBadge = c.priority === 'High' ? 'text-rose-600 font-bold' : c.priority === 'Medium' ? 'text-amber-600 font-medium' : 'text-slate-500';
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3.5 px-4 font-mono text-xs text-slate-500">${c.id}</td>
+                        <td class="py-3.5 px-4">
+                            <span class="font-bold text-slate-800">Room ${c.room}</span>
+                            <p class="text-xs text-slate-600 mt-0.5">${c.desc}</p>
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600">${c.category}</td>
+                        <td class="py-3.5 px-4 text-xs ${prioBadge}">${c.priority}</td>
+                        <td class="py-3.5 px-4 text-slate-500 text-xs">${c.reported}</td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full ${statusBadge}">${c.status}</span>
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                            <select onchange="updateTicketStatus('${c.id}', this.value)" class="text-xs border border-slate-200 rounded p-1 bg-slate-50 focus:outline-none">
+                                <option value="Open" ${c.status === 'Open' ? 'selected' : ''}>Open</option>
+                                <option value="In Progress" ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Resolved" ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Visitors & Gate Passes
+        function renderVisitorsAndGatePasses() {
+            // Visitors
+            const visBody = document.getElementById('visitor-table-body');
+            visBody.innerHTML = state.visitors.map(v => `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-2.5 px-3 font-semibold text-slate-800">${v.name}</td>
+                    <td class="py-2.5 px-3 text-slate-600">${v.host}</td>
+                    <td class="py-2.5 px-3 text-slate-500">${v.entryTime}</td>
+                    <td class="py-2.5 px-3 text-right">
+                        ${v.status === 'Inside' ? `<button onclick="checkoutVisitor('${v.id}')" class="text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded">Check Out</button>` : `<span class="text-[10px] text-slate-400">Exited</span>`}
+                    </td>
+                </tr>
+            `).join('');
+
+            // Gate Passes
+            const gpContainer = document.getElementById('gatepass-container');
+            gpContainer.innerHTML = state.gatePasses.map(gp => {
+                const statusColor = gp.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : gp.status === 'Rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800';
+
+                return `
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h5 class="font-bold text-slate-800 text-xs">${gp.student}</h5>
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${statusColor}">${gp.status}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-0.5">${gp.reason} • ${gp.exit} to ${gp.return}</p>
+                        </div>
+                        ${gp.status === 'Pending' ? `
+                            <div class="flex items-center gap-1">
+                                <button onclick="updateGatePass('${gp.id}', 'Approved')" class="p-1.5 bg-emerald-600 text-white rounded text-xs hover:bg-emerald-700" title="Approve"><i class="fa-solid fa-check"></i></button>
+                                <button onclick="updateGatePass('${gp.id}', 'Rejected')" class="p-1.5 bg-rose-600 text-white rounded text-xs hover:bg-rose-700" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Form Handlers
+        function handleAddStudent(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-std-name').value;
+            const roomId = parseInt(document.getElementById('new-std-room').value);
+            const contact = document.getElementById('new-std-contact').value;
+
+            const targetRoom = state.rooms.find(r => r.id === roomId);
+            if(targetRoom.occupied >= targetRoom.capacity) {
+                showToast("Selected room is already full!", "danger");
+                return;
+            }
+
+            const newStudent = {
+                id: `STD-${Math.floor(1000 + Math.random() * 9000)}`,
+                name: name,
+                room: roomId,
+                floor: targetRoom.floor,
+                contact: contact,
+                checkIn: new Date().toISOString().split('T')[0],
+                feeStatus: "Paid",
+                status: "Active"
+            };
+
+            targetRoom.occupied += 1;
+            targetRoom.residents.push(name);
+            if(targetRoom.occupied >= targetRoom.capacity) targetRoom.status = "Full";
+
+            state.students.unshift(newStudent);
+            addLog(`Registered resident ${name} to Room ${roomId}`, "fa-user-plus text-emerald-500");
+
+            saveState();
+            closeModal('add-student-modal');
+            showToast(`Student ${name} assigned to Room ${roomId}`);
+            initApp();
+        }
+
+        function handleAddComplaint(e) {
+            e.preventDefault();
+            const room = document.getElementById('cmp-room').value;
+            const category = document.getElementById('cmp-category').value;
+            const priority = document.getElementById('cmp-priority').value;
+            const desc = document.getElementById('cmp-desc').value;
+
+            const newTicket = {
+                id: `TK-${Math.floor(400 + Math.random() * 500)}`,
+                room: room,
+                category: category,
+                priority: priority,
+                desc: desc,
+                reported: "Just now",
+                status: "Open"
+            };
+
+            state.complaints.unshift(newTicket);
+            addLog(`New ticket ${newTicket.id} logged for Room ${room}`, "fa-screwdriver-wrench text-amber-500");
+
+            saveState();
+            closeModal('add-complaint-modal');
+            showToast("Maintenance ticket submitted successfully");
+            initApp();
+        }
+
+        function handleAddVisitor(e) {
+            e.preventDefault();
+            const name = document.getElementById('vis-name').value;
+            const host = document.getElementById('vis-host').value;
+
+            const newVis = {
+                id: `VIS-${Math.floor(900 + Math.random() * 100)}`,
+                name: name,
+                host: host,
+                entryTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: "Inside"
+            };
+
+            state.visitors.unshift(newVis);
+            addLog(`Visitor ${name} logged in for student ${host}`, "fa-id-badge text-purple-500");
+
+            saveState();
+            closeModal('add-visitor-modal');
+            showToast(`Visitor entry recorded for ${name}`);
+            initApp();
+        }
+
+        function handleGatePass(e) {
+            e.preventDefault();
+            const name = document.getElementById('gp-name').value;
+            const reason = document.getElementById('gp-reason').value;
+            const exit = document.getElementById('gp-exit').value;
+            const ret = document.getElementById('gp-return').value;
+
+            const newPass = {
+                id: `GP-${Math.floor(300 + Math.random() * 100)}`,
+                student: name,
+                reason: reason,
+                exit: exit,
+                return: ret,
+                status: "Pending"
+            };
+
+            state.gatePasses.unshift(newPass);
+            saveState();
+            closeModal('gate-pass-modal');
+            showToast("Gate pass request submitted for approval");
+            initApp();
+        }
+
+        // Action Quick Helpers
+        function collectPayment(invoiceId) {
+            const payment = state.payments.find(p => p.id === invoiceId);
+            if(payment) {
+                payment.status = "Paid";
+                addLog(`Collected payment of $${payment.amount} for ${payment.student}`, "fa-receipt text-emerald-500");
+                saveState();
+                showToast(`Payment collected for ${payment.student}`);
+                initApp();
+            }
+        }
+
+        function updateTicketStatus(ticketId, newStatus) {
+            const ticket = state.complaints.find(c => c.id === ticketId);
+            if(ticket) {
+                ticket.status = newStatus;
+                saveState();
+                showToast(`Ticket ${ticketId} updated to ${newStatus}`);
+                initApp();
+            }
+        }
+
+        function checkoutVisitor(visId) {
+            const vis = state.visitors.find(v => v.id === visId);
+            if(vis) {
+                vis.status = "Checked Out";
+                saveState();
+                showToast(`${vis.name} checked out`);
+                initApp();
+            }
+        }
+
+        function updateGatePass(passId, status) {
+            const pass = state.gatePasses.find(g => g.id === passId);
+            if(pass) {
+                pass.status = status;
+                saveState();
+                showToast(`Gate pass ${status.toLowerCase()}`);
+                initApp();
+            }
+        }
+
+        function toggleRoomStatus(roomId) {
+            const room = state.rooms.find(r => r.id === roomId);
+            if(room) {
+                if(room.status === 'Maintenance') {
+                    room.status = room.occupied >= room.capacity ? 'Full' : 'Available';
+                } else {
+                    room.status = 'Maintenance';
+                }
+                saveState();
+                showToast(`Room ${roomId} status updated`);
+                initApp();
+            }
+        }
+
+        function calculateRebate() {
+            const days = parseInt(document.getElementById('rebate-days').value) || 0;
+            const resEl = document.getElementById('rebate-result');
+            if(days <= 0) {
+                resEl.innerText = "Please enter valid missed days.";
+                resEl.classList.remove('hidden');
+                return;
+            }
+            const ratePerDay = 12; // $12 mess credit per day
+            const credit = days * ratePerDay;
+            resEl.innerText = `Estimated Mess Rebate Credit: $${credit}.00 ($${ratePerDay}/day)`;
+            resEl.classList.remove('hidden');
+        }
+
+        function viewStudentDetails(stdId) {
+            const std = state.students.find(s => s.id === stdId);
+            if(!std) return;
+
+            const modalBody = document.getElementById('student-detail-body');
+            modalBody.innerHTML = `
+                <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div class="w-12 h-12 rounded-full bg-sky-600 text-white font-bold flex items-center justify-center text-lg">
+                        ${std.name.charAt(0)}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">${std.name}</h4>
+                        <p class="text-xs text-slate-500">${std.id} • Room ${std.room}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="p-2.5 bg-slate-50 rounded-lg">
+                        <span class="text-slate-400 block font-semibold">Check-In Date</span>
+                        <span class="font-bold text-slate-700 mt-0.5 block">${std.checkIn}</span>
+                    </div>
+                    <div class="p-2.5 bg-slate-50 rounded-lg">
+                        <span class="text-slate-400 block font-semibold">Emergency Phone</span>
+                        <span class="font-bold text-slate-700 mt-0.5 block">${std.contact}</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="text-xs font-bold text-slate-600 uppercase mb-2">Billing Ledger</h5>
+                    <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center text-xs">
+                        <div>
+                            <p class="font-semibold text-slate-800">Monthly Rent & Mess</p>
+                            <p class="text-[10px] text-slate-400">Current Term Balance</p>
+                        </div>
+                        <span class="font-bold ${std.feeStatus === 'Paid' ? 'text-emerald-600' : 'text-rose-600'}">$300 (${std.feeStatus})</span>
+                    </div>
+                </div>
+            `;
+
+            openModal('student-detail-modal');
+        }
+
+        function addLog(text, icon) {
+            state.logs.unshift({
+                id: Date.now(),
+                text: text,
+                time: "Just now",
+                icon: icon
+            });
+        }
+
+        // Global Search Functionality
+        function handleGlobalSearch(query) {
+            if(!query) return;
+            const q = query.toLowerCase();
+            const foundStudent = state.students.find(s => s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q));
+            if(foundStudent) {
+                switchTab('students');
+                document.getElementById('student-search').value = query;
+                renderStudents();
+            }
+        }
+
+        function exportDataReport() {
+            showToast("Downloading system summary report CSV...", "info");
+        }
+
+        // Modal Utilities
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'add-student-modal') {
+                const roomSelect = document.getElementById('new-std-room');
+                const availRooms = state.rooms.filter(r => r.occupied < r.capacity && r.status !== 'Maintenance');
+                roomSelect.innerHTML = availRooms.map(r => `<option value="${r.id}">Room ${r.id} (${r.type} - ${r.capacity - r.occupied} bed free)</option>`).join('');
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // App Initializer
+        function initApp() {
+            renderDashboard();
+            renderRooms();
+            renderStudents();
+            renderPayments();
+            renderComplaints();
+            renderVisitorsAndGatePasses();
+        }
+
+        // Event Listeners Initialization
+        window.onload = function() {
+            initApp();
+
+            // Mobile menu toggle
+            document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+                const menu = document.getElementById('nav-menu');
+                menu.classList.toggle('hidden');
+            });
+        };
+    </script>
+</body>
+</html>
